@@ -7,30 +7,26 @@ import { STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
-  const db = getDb();
+  const sql = getDb();
 
-  const totalOrders = (db.prepare("SELECT COUNT(*) as c FROM orders").get() as { c: number }).c;
-  const todayOrders = (db.prepare(
-    "SELECT COUNT(*) as c FROM orders WHERE date(created_at) = date('now')"
-  ).get() as { c: number }).c;
-  const revenue = (db.prepare(
-    "SELECT COALESCE(SUM(total),0) as r FROM orders WHERE status != 'cancelled'"
-  ).get() as { r: number }).r;
-  const totalCustomers = (db.prepare("SELECT COUNT(*) as c FROM customers").get() as { c: number }).c;
+  const [{ c: totalOrders }] = await sql`SELECT COUNT(*) as c FROM orders` as { c: number }[];
+  const [{ c: todayOrders }] = await sql`SELECT COUNT(*) as c FROM orders WHERE created_at::date = CURRENT_DATE` as { c: number }[];
+  const [{ r: revenue }] = await sql`SELECT COALESCE(SUM(total),0) as r FROM orders WHERE status != 'cancelled'` as { r: number }[];
+  const [{ c: totalCustomers }] = await sql`SELECT COUNT(*) as c FROM customers` as { c: number }[];
 
-  const pendingOrders = db.prepare(`
+  const pendingOrders = await sql`
     SELECT o.*, c.name as customer_name, c.phone as customer_phone
     FROM orders o JOIN customers c ON c.id = o.customer_id
     WHERE o.status IN ('pending','confirmed','preparing','out_for_delivery')
     ORDER BY o.created_at DESC
     LIMIT 10
-  `).all() as Order[];
+  ` as Order[];
 
   const stats = [
     { label: "Today's Orders", value: todayOrders, icon: ShoppingBag, color: "text-orange-600", bg: "bg-orange-50" },
     { label: "Total Orders", value: totalOrders, icon: Clock, color: "text-blue-600", bg: "bg-blue-50" },
     { label: "Total Customers", value: totalCustomers, icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
-    { label: "Total Revenue", value: `Rs. ${revenue.toLocaleString()}`, icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Total Revenue", value: `Rs. ${Number(revenue).toLocaleString()}`, icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
   ];
 
   return (

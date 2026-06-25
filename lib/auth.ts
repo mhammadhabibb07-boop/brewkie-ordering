@@ -20,10 +20,9 @@ export function createSessionCookie(session: Session): string {
 }
 
 export async function verifyAdmin(username: string, password: string): Promise<Session | null> {
-  const db = getDb();
-  const admin = db.prepare("SELECT * FROM admins WHERE username = ?").get(username) as
-    | { id: number; username: string; password_hash: string }
-    | undefined;
+  const sql = getDb();
+  const rows = await sql`SELECT * FROM admins WHERE username = ${username}`;
+  const admin = rows[0] as { id: number; username: string; password_hash: string } | undefined;
   if (!admin) return null;
   const ok = await bcrypt.compare(password, admin.password_hash);
   if (!ok) return null;
