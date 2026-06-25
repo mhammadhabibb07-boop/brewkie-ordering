@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+:root {
+  --brand: #f97316;
+  --brand-dark: #c2410c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
