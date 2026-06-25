@@ -1,16 +1,19 @@
 import { neon } from "@neondatabase/serverless";
 
+const sql = neon(process.env.DATABASE_URL!);
+
 export function getDb() {
-  const sql = neon(process.env.DATABASE_URL!);
   return sql;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Sql = any;
 
-// Run once to create schema + seed. Call from an init route or manually.
+let initialized = false;
+
 export async function initDb() {
-  const sql = getDb();
+  if (initialized) return;
+  initialized = true;
 
   await sql`
     CREATE TABLE IF NOT EXISTS categories (
