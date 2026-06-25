@@ -15,6 +15,14 @@ export default function MenuPage() {
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") { setCartOpen(false); setSelectedProduct(null); }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const cart = useCart();
   const categoryRefs = useRef<Map<number, HTMLElement>>(new Map());
