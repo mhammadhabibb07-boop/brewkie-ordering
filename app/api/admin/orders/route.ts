@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { getDb, initDb } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
 
+  await initDb();
   const sql = getDb();
   const orders = status
     ? await sql`

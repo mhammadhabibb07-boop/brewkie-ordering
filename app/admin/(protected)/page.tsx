@@ -1,4 +1,4 @@
-import { getDb } from "@/lib/db";
+import { getDb, initDb } from "@/lib/db";
 import { ShoppingBag, Users, TrendingUp, Clock } from "lucide-react";
 import Link from "next/link";
 import type { Order } from "@/lib/types";
@@ -7,6 +7,7 @@ import { STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
+  await initDb();
   const sql = getDb();
 
   const [{ c: totalOrders }] = await sql`SELECT COUNT(*) as c FROM orders` as { c: number }[];

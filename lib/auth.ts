@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { getDb } from "./db";
+import { getDb, initDb } from "./db";
 import bcrypt from "bcryptjs";
 
 export type Session = { adminId: number; username: string };
@@ -20,6 +20,7 @@ export function createSessionCookie(session: Session): string {
 }
 
 export async function verifyAdmin(username: string, password: string): Promise<Session | null> {
+  await initDb();
   const sql = getDb();
   const rows = await sql`SELECT * FROM admins WHERE username = ${username}`;
   const admin = rows[0] as { id: number; username: string; password_hash: string } | undefined;
