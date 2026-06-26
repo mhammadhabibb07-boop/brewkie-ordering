@@ -55,16 +55,29 @@ export default function AdminMenu() {
     setImagePreview(URL.createObjectURL(file));
   }
 
+  function compressImage(file: File, maxSize = 400): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL("image/jpeg", 0.75));
+      };
+      img.src = url;
+    });
+  }
+
   async function addItem() {
     if (!newItem.name || !newItem.price || !newItem.category_id) return;
     setUploading(true);
     let image_url: string | null = null;
     if (imageFile) {
-      const fd = new FormData();
-      fd.append("file", imageFile);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const json = await res.json();
-      image_url = json.url ?? null;
+      image_url = await compressImage(imageFile);
     }
     await fetch("/api/admin/menu", {
       method: "POST",
