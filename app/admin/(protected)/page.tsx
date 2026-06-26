@@ -1,4 +1,4 @@
-import { getDb } from "@/lib/db";
+import { getDb, initDb } from "@/lib/db";
 import { ShoppingBag, Users, TrendingUp, Clock } from "lucide-react";
 import Link from "next/link";
 import type { Order } from "@/lib/types";
@@ -7,50 +7,47 @@ import { STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
-  const db = getDb();
+  await initDb();
+  const sql = getDb();
 
-  const totalOrders = (db.prepare("SELECT COUNT(*) as c FROM orders").get() as { c: number }).c;
-  const todayOrders = (db.prepare(
-    "SELECT COUNT(*) as c FROM orders WHERE date(created_at) = date('now')"
-  ).get() as { c: number }).c;
-  const revenue = (db.prepare(
-    "SELECT COALESCE(SUM(total),0) as r FROM orders WHERE status != 'cancelled'"
-  ).get() as { r: number }).r;
-  const totalCustomers = (db.prepare("SELECT COUNT(*) as c FROM customers").get() as { c: number }).c;
+  const [{ c: totalOrders }] = await sql`SELECT COUNT(*) as c FROM orders` as { c: number }[];
+  const [{ c: todayOrders }] = await sql`SELECT COUNT(*) as c FROM orders WHERE created_at::date = CURRENT_DATE` as { c: number }[];
+  const [{ r: revenue }] = await sql`SELECT COALESCE(SUM(total),0) as r FROM orders WHERE status != 'cancelled'` as { r: number }[];
+  const [{ c: totalCustomers }] = await sql`SELECT COUNT(*) as c FROM customers` as { c: number }[];
 
-  const pendingOrders = db.prepare(`
+  const pendingOrders = await sql`
     SELECT o.*, c.name as customer_name, c.phone as customer_phone
     FROM orders o JOIN customers c ON c.id = o.customer_id
     WHERE o.status IN ('pending','confirmed','preparing','out_for_delivery')
     ORDER BY o.created_at DESC
     LIMIT 10
-  `).all() as Order[];
+  ` as Order[];
 
   const stats = [
     { label: "Today's Orders", value: todayOrders, icon: ShoppingBag, color: "text-orange-600", bg: "bg-orange-50" },
     { label: "Total Orders", value: totalOrders, icon: Clock, color: "text-blue-600", bg: "bg-blue-50" },
     { label: "Total Customers", value: totalCustomers, icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
-    { label: "Total Revenue", value: `Rs. ${revenue.toLocaleString()}`, icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Total Revenue", value: `Rs. ${Number(revenue).toLocaleString()}`, icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+      <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((s) => (
-          <div key={s.label} className="bg-white rounded-2xl shadow-sm p-5">
-            <div className={`w-10 h-10 ${s.bg} ${s.color} rounded-xl flex items-center justify-center mb-3`}>
-              <s.icon size={20} />
+          <div key={s.label} className="bg-white rounded-2xl shadow-sm p-4">
+            <div className={`w-8 h-8 ${s.bg} ${s.color} rounded-xl flex items-center justify-center mb-2`}>
+              <s.icon size={16} />
             </div>
-            <p className="text-2xl font-bold text-gray-800">{s.value}</p>
-            <p className="text-sm text-gray-500">{s.label}</p>
+            <p className="text-xl font-bold text-gray-800">{s.value}</p>
+            <p className="text-xs text-gray-500">{s.label}</p>
           </div>
         ))}
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm">
-        <div className="flex items-center justify-between p-5 border-b">
+        <div className="flex items-center justify-between p-4 border-b">
           <h2 className="font-bold text-gray-800">Active Orders</h2>
           <Link href="/admin/orders" className="text-sm text-orange-600 hover:underline">View all</Link>
         </div>

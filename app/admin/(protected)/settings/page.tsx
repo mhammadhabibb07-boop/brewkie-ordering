@@ -30,14 +30,14 @@ export default function AdminSettings() {
     setTimeout(() => setSaved(false), 2000);
   }
 
-  if (!settings) return <div className="p-6 text-gray-400">Loading settings...</div>;
+  if (!settings) return <div className="p-4 text-gray-400 text-sm">Loading…</div>;
 
   return (
-    <div className="p-6 max-w-lg space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
+    <div className="p-4 md:p-6 max-w-lg space-y-4">
+      <h1 className="text-xl font-bold text-gray-800">Settings</h1>
 
-      <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
-        <h2 className="font-bold text-gray-700">Shop Information</h2>
+      <div className="bg-white rounded-2xl shadow-sm p-4 space-y-4">
+        <h2 className="font-semibold text-gray-700 text-sm">Shop Information</h2>
 
         {[
           { key: "shop_name", label: "Shop Name" },
@@ -78,7 +78,7 @@ export default function AdminSettings() {
 
       <button
         onClick={save}
-        className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors"
+        className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-xl font-semibold text-sm hover:bg-orange-600 transition-colors w-full justify-center"
       >
         <Save size={16} />
         {saved ? "Saved!" : "Save Changes"}

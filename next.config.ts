@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-sqlite3", "bcryptjs"],
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
