@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "add_product") {
-    const { name, description, price, category_id } = data;
-    const [row] = await sql`INSERT INTO products (category_id, name, description, price) VALUES (${category_id}, ${name}, ${description ?? null}, ${price}) RETURNING id`;
+    const { name, description, price, category_id, image_url } = data;
+    const [row] = await sql`INSERT INTO products (category_id, name, description, price, image_url) VALUES (${category_id}, ${name}, ${description ?? null}, ${price}, ${image_url ?? null}) RETURNING id`;
     return NextResponse.json({ id: row.id });
   }
 
@@ -45,6 +45,24 @@ export async function POST(req: NextRequest) {
   if (action === "add_category") {
     const [row] = await sql`INSERT INTO categories (name) VALUES (${data.name}) RETURNING id`;
     return NextResponse.json({ id: row.id });
+  }
+
+  if (action === "delete_product") {
+    await sql`DELETE FROM order_items WHERE product_id = ${data.id}`;
+    await sql`DELETE FROM product_variants WHERE product_id = ${data.id}`;
+    await sql`DELETE FROM products WHERE id = ${data.id}`;
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "delete_category") {
+    const products = await sql`SELECT id FROM products WHERE category_id = ${data.id}`;
+    for (const p of products) {
+      await sql`DELETE FROM order_items WHERE product_id = ${p.id}`;
+      await sql`DELETE FROM product_variants WHERE product_id = ${p.id}`;
+    }
+    await sql`DELETE FROM products WHERE category_id = ${data.id}`;
+    await sql`DELETE FROM categories WHERE id = ${data.id}`;
+    return NextResponse.json({ ok: true });
   }
 
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });
