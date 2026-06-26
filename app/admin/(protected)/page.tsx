@@ -31,23 +31,23 @@ export default async function AdminDashboard() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+      <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((s) => (
-          <div key={s.label} className="bg-white rounded-2xl shadow-sm p-5">
-            <div className={`w-10 h-10 ${s.bg} ${s.color} rounded-xl flex items-center justify-center mb-3`}>
-              <s.icon size={20} />
+          <div key={s.label} className="bg-white rounded-2xl shadow-sm p-4">
+            <div className={`w-8 h-8 ${s.bg} ${s.color} rounded-xl flex items-center justify-center mb-2`}>
+              <s.icon size={16} />
             </div>
-            <p className="text-2xl font-bold text-gray-800">{s.value}</p>
-            <p className="text-sm text-gray-500">{s.label}</p>
+            <p className="text-xl font-bold text-gray-800">{s.value}</p>
+            <p className="text-xs text-gray-500">{s.label}</p>
           </div>
         ))}
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm">
-        <div className="flex items-center justify-between p-5 border-b">
+        <div className="flex items-center justify-between p-4 border-b">
           <h2 className="font-bold text-gray-800">Active Orders</h2>
           <Link href="/admin/orders" className="text-sm text-orange-600 hover:underline">View all</Link>
         </div>
